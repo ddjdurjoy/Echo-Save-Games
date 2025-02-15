@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo Save Games</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #3D8D7A, #B3D8A8, #FBFFE4, #A3D1C6);
+            min-height: 100vh;
+            color: #3D8D7A;
+            overflow-x: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .game-card {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(61, 141, 122, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3D8D7A;
+            transition: width 0.3s ease;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #fff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-[#3D8D7A] via-[#B3D8A8] to-[#A3D1C6] p-4 text-white flex justify-between items-center shadow-lg sticky top-0 z-50">
+        <h1 class="text-2xl font-bold">Echo Save Games</h1>
+        <div class="flex items-center gap-4">
+            <span id="userGreeting" class="hidden"></span>
+            <button onclick="toggleLoginForm()" 
+                    class="bg-gradient-to-r from-[#3D8D7A] to-[#A3D1C6] px-4 py-2 rounded-full hover:from-cyan-500 hover:to-teal-400 transition duration-300">
+                Login / Sign Up
+            </button>
+        </div>
+    </nav>
+
+    <!-- Game Gallery -->
+    <section id="game-gallery" class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6"></section>
+
+    <!-- Auth Modal -->
+    <div id="loginForm" class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 hidden">
+        <div class="bg-gradient-to-tl from-[#FBFFE4] to-[#A3D1C6] p-6 rounded-2xl shadow-xl w-11/12 max-w-md mx-auto text-[#3D8D7A]">
+            <div class="flex gap-4 mb-4">
+                <div class="group flex-1">
+                    <button class="auth-tab w-full py-2 rounded-full bg-[#3D8D7A] text-white transition-colors duration-300" 
+                            data-mode="login" onclick="switchAuthMode(true)">
+                        Login
+                    </button>
+                </div>
+                <div class="group flex-1">
+                    <button class="auth-tab w-full py-2 rounded-full bg-[#B3D8A8] text-[#3D8D7A] transition-colors duration-300
+                              group-hover:bg-[#3D8D7A] group-hover:text-white" 
+                            data-mode="signup" onclick="switchAuthMode(false)">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+            
+            <form id="authForm" class="space-y-4">
+                <div id="usernameField" class="hidden">
+                    <input type="text" id="username" 
+                           class="w-full p-2 border-2 border-[#A3D1C6] rounded-lg bg-transparent placeholder-[#3D8D7A]"
+                           placeholder="Username" required>
+                </div>
+                
+                <input type="email" id="email" 
+                       class="w-full p-2 border-2 border-[#A3D1C6] rounded-lg bg-transparent placeholder-[#3D8D7A]"
+                       placeholder="Email" required>
+                
+                <input type="password" id="password" 
+                       class="w-full p-2 border-2 border-[#A3D1C6] rounded-lg bg-transparent placeholder-[#3D8D7A]"
+                       placeholder="Password" required minlength="6">
+
+                <div id="errorMessage" class="text-red-600 text-center hidden"></div>
+
+                <button type="submit" class="w-full py-2 bg-[#3D8D7A] text-white rounded-full hover:bg-[#2d6d5d] transition-colors flex justify-center items-center gap-2">
+                    <span id="submitText">Continue</span>
+                    <div id="submitSpinner" class="spinner hidden"></div>
+                </button>
+                <button type="button" onclick="toggleLoginForm()" 
+                        class="w-full mt-2 text-gray-600 hover:underline">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const games = [
+            { id: 1, title: "Tic Tac Toe", image: "https://via.placeholder.com/300x200?text=Tic+Tac+Toe" },
+            { id: 2, title: "Snake Game", image: "https://via.placeholder.com/300x200?text=Snake+Game" },
+            { id: 3, title: "Puzzle Game", image: "https://via.placeholder.com/300x200?text=Puzzle+Game" },
+            { id: 4, title: "Memory Match", image: "https://via.placeholder.com/300x200?text=Memory+Match" },
+            { id: 5, title: "Sudoku", image: "https://via.placeholder.com/300x200?text=Sudoku" },
+            { id: 6, title: "Chess", image: "https://via.placeholder.com/300x200?text=Chess" },
+            { id: 7, title: "Minesweeper", image: "https://via.placeholder.com/300x200?text=Minesweeper" },
+            { id: 8, title: "Tower Defense", image: "https://via.placeholder.com/300x200?text=Tower+Defense" },
+        ];
+
+        // User System
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+
+        // Game System
+        function loadGames() {
+            const gallery = document.getElementById("game-gallery");
+            gallery.innerHTML = games.map(game => `
+                <div class="game-card bg-gradient-to-br from-[#B3D8A8] to-[#FBFFE4] shadow-xl rounded-2xl overflow-hidden transition-transform hover:scale-105">
+                    <img src="${game.image}" alt="${game.title}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h2 class="text-xl font-bold mb-2">${game.title}</h2>
+                        <div class="progress-bar mb-3">
+                            <div class="progress-fill" style="width: ${getProgress(game.id)}%"></div>
+                        </div>
+                        <button onclick="playGame(${game.id})" 
+                                class="w-full bg-[#3D8D7A] text-white py-2 rounded-full hover:bg-[#2d6d5d] transition-colors">
+                            Play Now
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getProgress(gameId) {
+            const progressKey = currentUser ? `userProgress_${currentUser.id}` : 'guestProgress';
+            const progress = JSON.parse(localStorage.getItem(progressKey)) || {};
+            return progress[gameId] || 0;
+        }
+
+        function playGame(gameId) {
+            const progressKey = currentUser ? `userProgress_${currentUser.id}` : 'guestProgress';
+            const progress = JSON.parse(localStorage.getItem(progressKey)) || {};
+            const newProgress = Math.min((progress[gameId] || 0) + 10, 100);
+            
+            progress[gameId] = newProgress;
+            localStorage.setItem(progressKey, JSON.stringify(progress));
+            loadGames();
+        }
+
+        // Auth System
+        function toggleLoginForm() {
+            document.getElementById('loginForm').classList.toggle('hidden');
+        }
+
+        function switchAuthMode(isLogin) {
+            document.getElementById('usernameField').classList.toggle('hidden', isLogin);
+            document.querySelectorAll('.auth-tab').forEach(btn => {
+                const isActive = btn.dataset.mode === (isLogin ? 'login' : 'signup');
+                btn.classList.toggle('bg-\\[\\#3D8D7A\\]', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('bg-[#B3D8A8]', !isActive);
+                btn.classList.toggle('text-\\[\\#3D8D7A\\]', !isActive);
+            });
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const submitBtn = document.querySelector('#authForm button[type="submit"]');
+            const spinner = document.getElementById('submitSpinner');
+            const submitText = document.getElementById('submitText');
+            
+            try {
+                submitBtn.disabled = true;
+                spinner.classList.remove('hidden');
+                submitText.textContent = 'Processing...';
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const username = document.getElementById('username').value;
+                const isLogin = document.querySelector('.auth-tab.bg-\\[\\#3D8D7A\\]').dataset.mode === 'login';
+
+                if (!validateEmail(email)) throw new Error('Invalid email address');
+                if (password.length < 6) throw new Error('Password must be at least 6 characters');
+                if (!isLogin && !username) throw new Error('Username is required');
+
+                if (isLogin) {
+                    const user = users.find(u => u.email === email);
+                    if (!user) throw new Error('User not found');
+                    if (!bcrypt.compareSync(password, user.password)) throw new Error('Invalid password');
+                    currentUser = user;
+                } else {
+                    if (users.some(u => u.email === email)) throw new Error('Email already registered');
+                    const salt = bcrypt.genSaltSync(10);
+                    currentUser = {
+                        id: Date.now(),
+                        email,
+                        username,
+                        password: bcrypt.hashSync(password, salt)
+                    };
+                    users.push(currentUser);
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUI();
+                toggleLoginForm();
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                submitBtn.disabled = false;
+                spinner.classList.add('hidden');
+                submitText.textContent = 'Continue';
+            }
+        }
+
+        function updateUI() {
+            const greeting = document.getElementById('userGreeting');
+            if (currentUser) {
+                greeting.textContent = `Welcome, ${currentUser.username}!`;
+                greeting.classList.remove('hidden');
+            } else {
+                greeting.classList.add('hidden');
+            }
+            loadGames();
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            setTimeout(() => errorElement.classList.add('hidden'), 10000);
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // Initialize
+        document.getElementById('authForm').addEventListener('submit', handleAuth);
+        window.onload = () => {
+            loadGames();
+            updateUI();
+        };
+    </script>
+</body>
+</html>
