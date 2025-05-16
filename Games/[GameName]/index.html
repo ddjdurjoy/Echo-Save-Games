@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ...existing code... -->
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+
+    <script>
+        // Load the navigation bar
+        fetch('/c:/Users/Unknown/Documents/Echo Save Games/nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-placeholder').innerHTML = data;
+            });
+    </script>
+
+    <!-- ...existing code... -->
+</body>
+</html>
