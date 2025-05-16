@@ -1,28 +1,28 @@
 'use client';
 
-import React from 'react';
-import Image from 'next/image';
+import type { FC } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 
-interface GameProps {
-  game: {
-    id: number;
-    title: string;
-    description: string;
-    imageUrl: string;
-    url: string;
-  };
+interface Game {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string;
+  url: string;
 }
 
-export default function GameCard({ game }: GameProps) {
+interface GameCardProps {
+  game: Game;
+}
+
+const GameCard: FC<GameCardProps> = ({ game }) => {
   const router = useRouter();
   const { data: session } = useSession();
 
   const handlePlayClick = () => {
     if (!session) {
-      // Show login modal or continue as guest
       toast((t) => (
         <div className="flex flex-col gap-2">
           <p>Sign in to save your progress!</p>
@@ -55,13 +55,10 @@ export default function GameCard({ game }: GameProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="relative h-48">
-        <Image
-          src={game.imageUrl}
-          alt={game.title}
-          fill
-          className="object-cover"
-        />
+      <div className="relative h-48 bg-gray-200">
+        <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-gray-400">
+          {game.title[0].toUpperCase()}
+        </div>
       </div>
       <div className="p-4">
         <h3 className="text-xl font-semibold mb-2">{game.title}</h3>
@@ -75,4 +72,6 @@ export default function GameCard({ game }: GameProps) {
       </div>
     </div>
   );
-} 
+};
+
+export default GameCard; 

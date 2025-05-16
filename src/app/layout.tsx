@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import React from "react";
+import type { ReactNode } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
@@ -12,17 +12,28 @@ export const metadata: Metadata = {
   description: "A browser-based gaming platform where you can play and save your progress",
 };
 
+interface RootLayoutProps {
+  children: ReactNode;
+}
+
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: RootLayoutProps) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={inter.className}>
+      <body className="min-h-screen bg-gray-50">
         <AuthProvider>
           {children}
-          <Toaster position="bottom-right" />
+          <Toaster 
+            position="bottom-right"
+            toastOptions={{
+              duration: 5000,
+              style: {
+                background: '#333',
+                color: '#fff',
+              },
+            }}
+          />
         </AuthProvider>
       </body>
     </html>
