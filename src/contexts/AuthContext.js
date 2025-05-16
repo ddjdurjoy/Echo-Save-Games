@@ -1,6 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
-import { authService } from '../services/api';
-import toast from 'react-hot-toast';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
@@ -12,99 +10,50 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on component mount
+  // Check for stored user on initial load
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        // Check if token exists
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setLoading(false);
-          return;
-        }
-        
-        // Get current user data
-        const userData = await authService.getCurrentUser();
-        setCurrentUser(userData);
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-        // If token is invalid, clear it
-        localStorage.removeItem('token');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchUser();
-  }, []);
-
-  // Register function
-  const register = async (userData) => {
-    try {
-      const response = await authService.register(userData);
-      const user = await authService.getCurrentUser();
-      setCurrentUser(user);
-      return user;
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
     }
-  };
+    setLoading(false);
+  }, []);
 
   // Login function
   const login = async (credentials) => {
-    try {
-      const response = await authService.login(credentials);
-      const user = await authService.getCurrentUser();
-      setCurrentUser(user);
-      return user;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
+    // In a real app, this would make an API call
+    // For demo purposes, we'll just simulate a successful login
+    const user = {
+      id: 1,
+      name: 'Demo User',
+      email: credentials.email
+    };
+    
+    setCurrentUser(user);
+    localStorage.setItem('user', JSON.stringify(user));
+    return user;
   };
 
   // Logout function
   const logout = () => {
-    authService.logout();
     setCurrentUser(null);
+    localStorage.removeItem('user');
   };
 
-  // Save guest progress
+  // Guest progress functions
   const saveGuestProgress = (gameId, progress) => {
-    const now = new Date();
-    const expiryTime = now.getTime() + 24 * 60 * 60 * 1000; // 24 hours from now
-    
-    const guestProgress = JSON.parse(localStorage.getItem('guestProgress') || '{}');
-    guestProgress[gameId] = {
-      progress,
-      expiry: expiryTime
-    };
-    
-    localStorage.setItem('guestProgress', JSON.stringify(guestProgress));
+    const key = `guest_progress_${gameId}`;
+    localStorage.setItem(key, JSON.stringify(progress));
   };
 
-  // Get guest progress
   const getGuestProgress = (gameId) => {
-    const guestProgress = JSON.parse(localStorage.getItem('guestProgress') || '{}');
-    const gameProgress = guestProgress[gameId];
-    
-    if (!gameProgress) return null;
-    
-    // Check if progress has expired
-    if (new Date().getTime() > gameProgress.expiry) {
-      // Remove expired progress
-      delete guestProgress[gameId];
-      localStorage.setItem('guestProgress', JSON.stringify(guestProgress));
-      return null;
-    }
-    
-    return gameProgress.progress;
+    const key = `guest_progress_${gameId}`;
+    const progress = localStorage.getItem(key);
+    return progress ? JSON.parse(progress) : null;
   };
 
   const value = {
     currentUser,
-    register,
     login,
     logout,
     saveGuestProgress,
@@ -117,3 +66,4 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -37,19 +37,15 @@ function Login() {
     toast.error('Google login not implemented in this demo');
   };
   
-  const handleFacebookLogin = () => {
-    toast.error('Facebook login not implemented in this demo');
-  };
-
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-6">Log In</h1>
-      
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+      <div className="bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-center mb-6">Log In to Your Account</h1>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
+              Email Address
             </label>
             <input
               id="email"
@@ -57,13 +53,13 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
-              placeholder="your@email.com"
+              placeholder="you@example.com"
               required
             />
           </div>
           
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-6">
+            <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
               Password
             </label>
             <input
@@ -126,3 +122,4 @@ function Login() {
 }
 
 export default Login;
+
