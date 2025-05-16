@@ -1,30 +1,33 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import GameCard from '../components/GameCard';
 import { gameService } from '../services/api';
 import toast from 'react-hot-toast';
 
-// Dummy data for games (fallback if API fails)
+// Fallback dummy data
 const dummyGames = [
   {
     id: 1,
     title: 'Tic Tac Toe',
     description: 'Classic game of X and O. Be the first to get three in a row!',
     imageUrl: 'https://placehold.co/600x400/3B82F6/FFFFFF?text=Tic+Tac+Toe',
-    category: 'Strategy'
+    category: 'Strategy',
+    embedUrl: 'https://www.google.com/logos/2010/pacman10-i.html'
   },
   {
     id: 2,
     title: 'Memory Match',
     description: 'Test your memory by matching pairs of cards. Find all matches to win!',
     imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=Memory+Match',
-    category: 'Puzzle'
+    category: 'Puzzle',
+    embedUrl: 'https://www.google.com/logos/2010/pacman10-i.html'
   },
   {
     id: 3,
     title: 'Snake Game',
     description: 'Control a snake to eat food and grow longer without hitting walls or yourself.',
     imageUrl: 'https://placehold.co/600x400/F59E0B/FFFFFF?text=Snake+Game',
-    category: 'Arcade'
+    category: 'Arcade',
+    embedUrl: 'https://www.google.com/logos/2010/pacman10-i.html'
   }
 ];
 
@@ -72,3 +75,4 @@ function Home() {
 }
 
 export default Home;
+

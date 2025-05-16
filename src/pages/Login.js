@@ -37,6 +37,10 @@ function Login() {
     toast.error('Google login not implemented in this demo');
   };
   
+  const handleFacebookLogin = () => {
+    toast.error('Facebook login not implemented in this demo');
+  };
+  
   return (
     <div className="max-w-md mx-auto">
       <div className="bg-white p-8 rounded-lg shadow-md">
@@ -75,14 +79,14 @@ function Login() {
           
           <button
             type="submit"
+            className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             disabled={loading}
-            className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-300"
           >
             {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
         
-        <div className="mt-4">
+        <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
@@ -92,34 +96,33 @@ function Login() {
             </div>
           </div>
           
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-6 grid grid-cols-2 gap-3">
             <button
               onClick={handleGoogleLogin}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
             >
               Google
             </button>
             <button
               onClick={handleFacebookLogin}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
             >
               Facebook
             </button>
           </div>
         </div>
         
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-primary hover:text-blue-700">
-              Sign up
-            </Link>
-          </p>
-        </div>
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Don't have an account?{' '}
+          <Link to="/register" className="font-medium text-primary hover:text-blue-700">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );
 }
 
 export default Login;
+
 
