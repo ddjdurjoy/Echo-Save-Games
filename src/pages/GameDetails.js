@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import LoginModal from '../components/LoginModal';
+import { gameService, progressService } from '../services/api';
 import toast from 'react-hot-toast';
 
-// Dummy data for games
+// Dummy data for games (fallback if API fails)
 const dummyGames = [
   {
     id: 1,
@@ -12,7 +13,7 @@ const dummyGames = [
     description: 'Classic game of X and O. Be the first to get three in a row!',
     imageUrl: 'https://placehold.co/600x400/3B82F6/FFFFFF?text=Tic+Tac+Toe',
     category: 'Strategy',
-    embedUrl: 'https://codepen.io/joshbuchea/embed/qNyEGa?default-tab=result'
+    embedUrl: 'https://www.google.com/logos/2010/pacman10-i.html'
   },
   {
     id: 2,
@@ -20,7 +21,7 @@ const dummyGames = [
     description: 'Test your memory by matching pairs of cards. Find all matches to win!',
     imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=Memory+Match',
     category: 'Puzzle',
-    embedUrl: 'https://codepen.io/natewiley/embed/HBrbL?default-tab=result'
+    embedUrl: 'https://www.google.com/logos/2010/pacman10-i.html'
   },
   {
     id: 3,
@@ -28,31 +29,7 @@ const dummyGames = [
     description: 'Control a snake to eat food and grow longer without hitting walls or yourself.',
     imageUrl: 'https://placehold.co/600x400/F59E0B/FFFFFF?text=Snake+Game',
     category: 'Arcade',
-    embedUrl: 'https://codepen.io/hellodiara/embed/oNBeyjZ?default-tab=result'
-  },
-  {
-    id: 4,
-    title: 'Flappy Bird',
-    description: 'Navigate a bird through pipes by tapping to flap its wings.',
-    imageUrl: 'https://placehold.co/600x400/EF4444/FFFFFF?text=Flappy+Bird',
-    category: 'Arcade',
-    embedUrl: 'https://codepen.io/ju-az/embed/eYJQwLx?default-tab=result'
-  },
-  {
-    id: 5,
-    title: 'Sudoku',
-    description: 'Fill the 9×9 grid with digits so that each column, row, and 3×3 section contain the numbers 1-9.',
-    imageUrl: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Sudoku',
-    category: 'Puzzle',
-    embedUrl: 'https://codepen.io/afif/embed/dyOGKWd?default-tab=result'
-  },
-  {
-    id: 6,
-    title: 'Chess',
-    description: 'Classic strategy board game where you must checkmate your opponent\'s king.',
-    imageUrl: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Chess',
-    category: 'Strategy',
-    embedUrl: 'https://codepen.io/lonekorean/embed/KXLrVm?default-tab=result'
+    embedUrl: 'https://www.google.com/logos/2010/pacman10-i.html'
   }
 ];
 
@@ -67,37 +44,67 @@ function GameDetails() {
   const [gameProgress, setGameProgress] = useState(null);
   
   useEffect(() => {
-    // In a real app, this would be an API call
-    // For now, we'll use the dummy data
-    const foundGame = dummyGames.find(g => g.id === parseInt(id));
-    
-    if (foundGame) {
-      setGame(foundGame);
-      
-      // Check for saved progress
-      if (currentUser) {
-        // In a real app, this would fetch from the backend
-        console.log('Would fetch progress for user:', currentUser.id);
-      } else {
-        const guestProgress = getGuestProgress(foundGame.id);
-        if (guestProgress) {
-          setGameProgress(guestProgress);
-          toast.success('Loaded your previous progress!');
+    const fetchGameData = async () => {
+      try {
+        // Try to fetch from API
+        const gameData = await gameService.getGameById(id);
+        setGame(gameData);
+        
+        // Check for saved progress
+        if (currentUser) {
+          try {
+            const progressData = await progressService.getGameProgress(id);
+            setGameProgress(progressData);
+            toast.success('Loaded your previous progress!');
+          } catch (error) {
+            // No progress found, that's okay
+            console.log('No previous progress found');
+          }
+        } else {
+          const guestProgress = getGuestProgress(id);
+          if (guestProgress) {
+            setGameProgress(guestProgress);
+            toast.success('Loaded your previous progress!');
+          }
         }
+      } catch (error) {
+        console.error('Failed to fetch game:', error);
+        // Fallback to dummy data
+        const foundGame = dummyGames.find(g => g.id === parseInt(id));
+        
+        if (foundGame) {
+          setGame(foundGame);
+          toast.warning('Using demo data. In a real app, this would fetch from the server.');
+          
+          // Check for guest progress
+          if (!currentUser) {
+            const guestProgress = getGuestProgress(foundGame.id);
+            if (guestProgress) {
+              setGameProgress(guestProgress);
+              toast.success('Loaded your previous progress!');
+            }
+          }
+        } else {
+          toast.error('Game not found');
+          navigate('/');
+        }
+      } finally {
+        setLoading(false);
       }
-    } else {
-      toast.error('Game not found');
-      navigate('/');
-    }
+    };
     
-    setLoading(false);
+    fetchGameData();
   }, [id, currentUser, navigate, getGuestProgress]);
   
-  const handleSaveProgress = (progress) => {
+  const handleSaveProgress = async (progress) => {
     if (currentUser) {
-      // In a real app, this would save to the backend
-      console.log('Would save progress for user:', currentUser.id, progress);
-      toast.success('Progress saved to your account!');
+      try {
+        await progressService.saveProgress(game.id, progress);
+        toast.success('Progress saved to your account!');
+      } catch (error) {
+        console.error('Failed to save progress:', error);
+        toast.error('Failed to save progress. Please try again.');
+      }
     } else {
       saveGuestProgress(game.id, progress);
       toast.success('Progress saved temporarily! Create an account to save permanently.');
@@ -115,28 +122,35 @@ function GameDetails() {
     // Allow playing as guest
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-xl">Loading game...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-xl">Loading game...</p>
-        </div>
-      ) : game ? (
+      {showLoginModal && (
+        <LoginModal 
+          onClose={() => setShowLoginModal(false)}
+          onContinueAsGuest={handleContinueAsGuest}
+        />
+      )}
+      
+      {game ? (
         <div>
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-dark mb-2">{game.title}</h1>
-            <p className="text-gray-600 mb-4">{game.description}</p>
-            <div className="flex items-center mb-4">
-              <span className="bg-primary text-white px-3 py-1 rounded-full text-sm mr-2">
-                {game.category}
-              </span>
-              {gameProgress && (
-                <span className="bg-secondary text-white px-3 py-1 rounded-full text-sm">
-                  Progress Saved
-                </span>
-              )}
+          <h1 className="text-3xl font-bold mb-2">{game.title}</h1>
+          <p className="text-gray-600 mb-6">{game.description}</p>
+          
+          {gameProgress && (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+              <h3 className="font-semibold text-blue-800">Your Progress</h3>
+              <p className="text-blue-700">Score: {gameProgress.score}</p>
+              {/* Display other progress data as needed */}
             </div>
-          </div>
+          )}
           
           <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
             <div className="aspect-w-16 aspect-h-9">
@@ -176,15 +190,10 @@ function GameDetails() {
           </button>
         </div>
       )}
-      
-      {showLoginModal && (
-        <LoginModal 
-          onClose={() => setShowLoginModal(false)}
-          onContinueAsGuest={handleContinueAsGuest}
-        />
-      )}
     </div>
   );
 }
 
 export default GameDetails;
+
+

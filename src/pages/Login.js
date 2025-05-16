@@ -22,20 +22,12 @@ function Login() {
     setLoading(true);
     
     try {
-      // In a real app, this would be an API call
-      // For demo purposes, we'll simulate a successful login
-      setTimeout(() => {
-        login({
-          id: 1,
-          name: 'Demo User',
-          email: email
-        });
-        
-        toast.success('Logged in successfully!');
-        navigate('/');
-      }, 1000);
+      await login({ email, password });
+      toast.success('Logged in successfully!');
+      navigate('/');
     } catch (error) {
-      toast.error('Failed to log in. Please check your credentials.');
+      console.error('Login error:', error);
+      toast.error(error.response?.data?.msg || 'Failed to log in. Please check your credentials.');
     } finally {
       setLoading(false);
     }

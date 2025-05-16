@@ -34,30 +34,32 @@ function LoginModal({ onClose, onContinueAsGuest }) {
                   as="h3"
                   className="text-lg font-medium leading-6 text-gray-900"
                 >
-                  Save Your Progress
+                  Create an Account to Save Progress
                 </Dialog.Title>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    Create an account or log in to save your game progress and compete on the leaderboard!
+                    Create an account or log in to save your game progress and compete on leaderboards.
                   </p>
                 </div>
 
                 <div className="mt-4 space-y-3">
                   <Link
                     to="/login"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none"
+                    className="inline-flex justify-center w-full rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none"
                   >
                     Log In
                   </Link>
+                  
                   <Link
                     to="/register"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent bg-secondary px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none"
+                    className="inline-flex justify-center w-full rounded-md border border-primary bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-blue-50 focus:outline-none"
                   >
-                    Sign Up
+                    Create Account
                   </Link>
+                  
                   <button
                     type="button"
-                    className="w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                    className="inline-flex justify-center w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
                     onClick={onContinueAsGuest}
                   >
                     Continue as Guest

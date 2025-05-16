@@ -10,7 +10,7 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
   
   const handleSubmit = async (e) => {
@@ -29,20 +29,12 @@ function Register() {
     setLoading(true);
     
     try {
-      // In a real app, this would be an API call
-      // For demo purposes, we'll simulate a successful registration
-      setTimeout(() => {
-        login({
-          id: 1,
-          name: name,
-          email: email
-        });
-        
-        toast.success('Account created successfully!');
-        navigate('/');
-      }, 1000);
+      await register({ name, email, password });
+      toast.success('Account created successfully!');
+      navigate('/');
     } catch (error) {
-      toast.error('Failed to create account. Please try again.');
+      console.error('Registration error:', error);
+      toast.error(error.response?.data?.msg || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -127,7 +119,7 @@ function Register() {
             disabled={loading}
             className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-300"
           >
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
         
@@ -171,3 +163,6 @@ function Register() {
 }
 
 export default Register;
+
+
+

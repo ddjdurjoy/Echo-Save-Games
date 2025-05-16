@@ -1,4 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
+import { authService } from '../services/api';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -12,23 +14,60 @@ export function AuthProvider({ children }) {
 
   // Check if user is logged in on component mount
   useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (user) {
-      setCurrentUser(JSON.parse(user));
-    }
-    setLoading(false);
+    const fetchUser = async () => {
+      try {
+        // Check if token exists
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+        
+        // Get current user data
+        const userData = await authService.getCurrentUser();
+        setCurrentUser(userData);
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+        // If token is invalid, clear it
+        localStorage.removeItem('token');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUser();
   }, []);
 
+  // Register function
+  const register = async (userData) => {
+    try {
+      const response = await authService.register(userData);
+      const user = await authService.getCurrentUser();
+      setCurrentUser(user);
+      return user;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  };
+
   // Login function
-  const login = (userData) => {
-    setCurrentUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const login = async (credentials) => {
+    try {
+      const response = await authService.login(credentials);
+      const user = await authService.getCurrentUser();
+      setCurrentUser(user);
+      return user;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   // Logout function
   const logout = () => {
+    authService.logout();
     setCurrentUser(null);
-    localStorage.removeItem('user');
   };
 
   // Save guest progress
@@ -65,6 +104,7 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
+    register,
     login,
     logout,
     saveGuestProgress,

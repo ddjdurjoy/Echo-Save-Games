@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import GameCard from '../components/GameCard';
+import { gameService } from '../services/api';
+import toast from 'react-hot-toast';
 
-// Dummy data for games
+// Dummy data for games (fallback if API fails)
 const dummyGames = [
   {
     id: 1,
@@ -23,27 +25,6 @@ const dummyGames = [
     description: 'Control a snake to eat food and grow longer without hitting walls or yourself.',
     imageUrl: 'https://placehold.co/600x400/F59E0B/FFFFFF?text=Snake+Game',
     category: 'Arcade'
-  },
-  {
-    id: 4,
-    title: 'Flappy Bird',
-    description: 'Navigate a bird through pipes by tapping to flap its wings.',
-    imageUrl: 'https://placehold.co/600x400/EF4444/FFFFFF?text=Flappy+Bird',
-    category: 'Arcade'
-  },
-  {
-    id: 5,
-    title: 'Sudoku',
-    description: 'Fill the 9×9 grid with digits so that each column, row, and 3×3 section contain the numbers 1-9.',
-    imageUrl: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Sudoku',
-    category: 'Puzzle'
-  },
-  {
-    id: 6,
-    title: 'Chess',
-    description: 'Classic strategy board game where you must checkmate your opponent\'s king.',
-    imageUrl: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Chess',
-    category: 'Strategy'
   }
 ];
 
@@ -52,10 +33,20 @@ function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    // For now, we'll use the dummy data
-    setGames(dummyGames);
-    setLoading(false);
+    const fetchGames = async () => {
+      try {
+        const gamesData = await gameService.getAllGames();
+        setGames(gamesData);
+      } catch (error) {
+        console.error('Failed to fetch games:', error);
+        toast.error('Failed to load games. Using demo data instead.');
+        setGames(dummyGames);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
   }, []);
 
   return (
