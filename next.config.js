@@ -13,8 +13,7 @@ const nextConfig = {
     // We should fix TypeScript errors and remove this in the future
     ignoreBuildErrors: true,
   },
-  // Configure output directory for Vercel
-  distDir: '.next',
+  output: 'export',
   // Enable React strict mode for better development
   reactStrictMode: true,
 };
