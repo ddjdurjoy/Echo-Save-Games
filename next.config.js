@@ -13,7 +13,6 @@ const nextConfig = {
     // We should fix TypeScript errors and remove this in the future
     ignoreBuildErrors: true,
   },
-  output: 'export',
   // Enable React strict mode for better development
   reactStrictMode: true,
 };
