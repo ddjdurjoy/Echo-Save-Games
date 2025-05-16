@@ -1,15 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'echo-save-games.vercel.app'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
+    // We should fix TypeScript errors and remove this in the future
     ignoreBuildErrors: true,
   },
+  // Ensure output is optimized for production
+  output: 'standalone',
+  // Enable React strict mode for better development
+  reactStrictMode: true,
 };
 
 module.exports = nextConfig; 
