@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "build:css": "sh build-css.sh"
-  },
-  "devDependencies": {
-    "tailwindcss": "^4.0.6"
-  }
-}
